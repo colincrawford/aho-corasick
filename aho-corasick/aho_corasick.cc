@@ -89,6 +89,12 @@ public:
         delete root_;
     }
 
+    /**
+     * Cycle through the Trie based automaton - either going to the next character's
+     * child Node for the current Node, or following failure links until we either
+     * find a Node with the next character as a child, or find ourselves back at
+     * the root of the Trie
+     */
     std::unordered_set<std::string> Search(const std::string& text_to_search)
     {
         std::unordered_set<std::string> found;
@@ -98,22 +104,30 @@ public:
         for (const char& c : text_to_search)
         {
             next_node = node->ChildNode(c);
+
+            // we can't keep walking down the Trie
             if (next_node == nullptr)
             {
-                // we weren't able to find the next node at our current position
-                // lets hop over to the current node's failure node & check it's children
-                node = node->failure_node();
-                next_node = node->ChildNode(c);
-                if (next_node == nullptr)
+                // keep checking the current node & then following failure
+                // links until we either find a valid path or find ourselves
+                // back at the root of the Trie. The successive failure links
+                // will basically be shorter and shorter prefixes based on
+                // the matching suffix we started with
+                while (next_node == nullptr && node != root_)
                 {
-                    // we couldn't find it there either, move to the next failure node and continue
-                    // this path will have been from the root or the root, so we don't have to check
-                    // its children
-                    next_node = node->failure_node();
+                    node = node->failure_node();
+                    next_node = node->ChildNode(c);
                 }
             }
 
-            node = next_node;
+            // this covers the case where we couldn't match a child node, ended
+            // up back at the root node, & the root node still didn't contain the
+            // child node
+            if (next_node != nullptr)
+            {
+                node = next_node;
+            }
+
             if (node->has_word())
             {
                 found.insert(node->word());
@@ -126,6 +140,11 @@ public:
 private:
     TrieNode* root_;
 
+    /**
+     * Normal Trie add - traverse down the Trie following the input word character
+     * by character, creating any missing Nodes on the way. Then add this word
+     * to the Node for the last character in the word
+     */
     void Add(const std::string& word)
     {
         TrieNode* current_node = root_;

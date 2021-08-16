@@ -11,7 +11,8 @@ int main()
 {
     std::vector<int> results {
         test_case({ "cat", "bat", "tiny", "phenom" }, "catatonic", { "cat" }),
-        test_case({ "acc", "atc", "cat", "gcg" }, "gcatcg", { "atc", "cat" })
+        test_case({ "acc", "atc", "cat", "gcg" }, "gcatcg", { "atc", "cat" }),
+        test_case({ "amster", "bambino", "cabam", "merger" }, "cabamerger", { "cabam", "merger" })
     };
 
     for (const int result : results)
